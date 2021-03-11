@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	_ "embed"
 	"fmt"
+	"go/format"
 	"sort"
 	"strconv"
 	"strings"
@@ -191,6 +192,7 @@ func (g *Generator) convertObject(obj *tstypes.Object, upper *metadata) string {
 		converted.Fields = append(converted.Fields, objectEntry{
 			Field: e.RawName,
 			Type:  g.convert(e.Type, &metadata{upperStructName: name, inlineIndex: i}),
+			Tag:   e.RawTag,
 		})
 	}
 
@@ -245,5 +247,11 @@ func (g *Generator) Generate() (string, error) {
 		return "", xerrors.Errorf("failed to generate template: %w", err)
 	}
 
-	return buf.String(), nil
+	b, err := format.Source([]byte(buf.String()))
+
+	if err != nil {
+		return "", xerrors.Errorf("failed to format source code: %w", err)
+	}
+
+	return string(b), nil
 }
