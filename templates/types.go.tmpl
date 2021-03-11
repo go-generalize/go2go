@@ -1,0 +1,24 @@
+package types
+
+{{if .UseTimePackage -}}
+import (
+	"time"
+)
+{{- end}}
+{{range $obj := .Objects}}
+type {{$obj.Name}} struct {
+{{- range $field := $obj.Fields}}
+	{{$field.Field}} {{$field.Type}}{{if ne $field.Tag ""}} `{{$field.Tag}}`{{end}}
+{{- end}}
+}
+{{end -}}
+
+{{- range $cnst := .Consts}}
+type {{$cnst.Name}} {{$cnst.Base}}
+
+const (
+{{- range $field := $cnst.Enums}}
+	{{$field.Name}} {{$cnst.Base}} = {{$field.Value}}
+{{- end}}
+)
+{{end}}
