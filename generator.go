@@ -57,13 +57,19 @@ type metadata struct {
 	inlineIndex     int
 }
 
-func NewGenerator(types map[string]tstypes.Type) *Generator {
+func NewGenerator(types map[string]tstypes.Type, prereserved []string) *Generator {
+	prs := map[string]string{}
+	for _, p := range prereserved {
+		_, name := SplitPackegeStruct(p)
+		prs[name] = p
+	}
+
 	return &Generator{
 		types: types,
 
 		converted:   map[string]string{},
 		reserved:    map[string]struct{}{},
-		prereserved: map[string]string{},
+		prereserved: prs,
 	}
 }
 
