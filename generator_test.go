@@ -24,7 +24,7 @@ func TestGenerate(t *testing.T) {
 		return strings.HasSuffix(opt.Name, "Request") || strings.HasSuffix(opt.Name, "Response")
 	}
 
-	psr, err := parser.NewParser("./test", filter)
+	psr, err := parser.NewParser("./testdata/standard", filter)
 
 	if err != nil {
 		t.Fatal(err)
@@ -35,8 +35,9 @@ func TestGenerate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	fmt.Println(res)
 
-	gen := NewGenerator(res)
+	gen := NewGenerator(res, []string{})
 	fmt.Println(gen.Generate())
 
 	pp.Println(gen.generatorParam.Objects)
