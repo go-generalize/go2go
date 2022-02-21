@@ -1,10 +1,13 @@
 package types
 
-{{if .UseTimePackage -}}
 import (
+{{- if .UseTimePackage}}
 	"time"
+{{- end }}
+{{- range $imp := .Imported }}
+	{{ $imp.Alias }} "{{ $imp.Path }}"
+{{- end }}
 )
-{{- end}}
 {{range $obj := .Objects}}
 type {{$obj.Name}} struct {
 {{- range $field := $obj.Fields}}
