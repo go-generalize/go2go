@@ -3,7 +3,9 @@ package go2go
 import (
 	"bytes"
 	"crypto/sha1"
+	"crypto/sha256"
 	_ "embed"
+	"encoding/hex"
 	"fmt"
 	"go/format"
 	"sort"
@@ -16,12 +18,20 @@ import (
 )
 
 type Generator struct {
+	ExternalGenerator func(tstypes.Type) (*GeneratedType, bool)
+
 	types map[string]tstypes.Type
 	generatorParam
 
 	converted   map[string]string
 	prereserved map[string]string
 	reserved    map[string]struct{}
+	imported    map[string]string
+}
+
+type GeneratedType struct {
+	Path string
+	Name string
 }
 
 type objectEntry struct {
@@ -46,9 +56,14 @@ type constant struct {
 	Enums []constantEnum
 }
 
+type imported struct {
+	Alias, Path string
+}
+
 type generatorParam struct {
-	Consts  []constant
-	Objects []object
+	Consts   []constant
+	Objects  []object
+	Imported []imported
 
 	UseTimePackage bool
 }
@@ -71,10 +86,30 @@ func NewGenerator(types map[string]tstypes.Type, prereserved []string) *Generato
 		converted:   map[string]string{},
 		reserved:    map[string]struct{}{},
 		prereserved: prs,
+		imported:    map[string]string{},
 	}
 }
 
+func (g *Generator) getImportAlias(path string) string {
+	cs := sha256.Sum256([]byte(path))
+
+	return "external_" + hex.EncodeToString(cs[:])[:7]
+}
+
 func (g *Generator) convert(v tstypes.Type, meta *metadata) string {
+	if g.ExternalGenerator != nil {
+		if res, ok := g.ExternalGenerator(v); ok {
+			if res.Path == "" {
+				return res.Name
+			}
+
+			alias := g.getImportAlias(res.Path)
+			g.imported[alias] = res.Path
+
+			return alias + "." + res.Name
+		}
+	}
+
 	switch v := v.(type) {
 	case *tstypes.Array:
 		return "[]" + g.convert(v.Inner, meta)
@@ -233,6 +268,17 @@ func (g *Generator) Generate() (string, error) {
 		g.convert(v, nil)
 	}
 
+	g.Imported = make([]imported, 0, len(g.imported))
+	for k, v := range g.imported {
+		g.Imported = append(g.Imported, imported{
+			Alias: k,
+			Path:  v,
+		})
+	}
+	sort.Slice(g.Imported, func(i, j int) bool {
+		return g.Imported[i].Path < g.Imported[j].Path
+	})
+
 	sort.Slice(g.Objects, func(i, j int) bool {
 		return g.Objects[i].Name < g.Objects[j].Name
 	})
@@ -247,7 +293,7 @@ func (g *Generator) Generate() (string, error) {
 		return "", xerrors.Errorf("failed to generate template: %w", err)
 	}
 
-	b, err := format.Source([]byte(buf.String()))
+	b, err := format.Source(buf.Bytes())
 
 	if err != nil {
 		return "", xerrors.Errorf("failed to format source code: %w", err)
