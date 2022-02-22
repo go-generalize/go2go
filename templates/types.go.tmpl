@@ -1,5 +1,6 @@
 package types
 
+{{ if or .UseTimePackage .Imported -}}
 import (
 {{- if .UseTimePackage}}
 	"time"
@@ -8,6 +9,7 @@ import (
 	{{ $imp.Alias }} "{{ $imp.Path }}"
 {{- end }}
 )
+{{- end }}
 {{range $obj := .Objects}}
 type {{$obj.Name}} struct {
 {{- range $field := $obj.Fields}}

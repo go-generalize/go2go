@@ -20,6 +20,10 @@ func TestGenerate(t *testing.T) {
 
 	cases := []testCase{
 		{
+			dir:      "testdata/empty",
+			expected: "testdata/empty/expected/expected.go",
+		},
+		{
 			dir:      "testdata/standard",
 			expected: "testdata/standard/expected/expected.go",
 		},
