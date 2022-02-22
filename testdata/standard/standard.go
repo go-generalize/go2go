@@ -10,6 +10,8 @@ const (
 )
 
 type PostUserRequest struct {
-	T time.Time
-	S string `json:"s"`
+	T     time.Time
+	S     string `json:"s"`
+	Slice []string
+	Map   map[string]int64
 }

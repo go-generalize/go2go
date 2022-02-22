@@ -125,6 +125,13 @@ func (g *Generator) convert(v tstypes.Type, meta *metadata) string {
 		g.UseTimePackage = true
 		return "time.Time"
 	case *tstypes.Nullable:
+		_, isArray := v.Inner.(*tstypes.Array)
+		_, isMap := v.Inner.(*tstypes.Map)
+
+		if isArray || isMap {
+			return g.convert(v.Inner, meta)
+		}
+
 		return "*" + g.convert(v.Inner, meta)
 	case *tstypes.Any:
 		return "interface{}"

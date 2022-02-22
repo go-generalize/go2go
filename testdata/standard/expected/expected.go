@@ -5,6 +5,8 @@ import (
 )
 
 type PostUserRequest struct {
-	S string `json:"s"`
-	T time.Time
+	Map   map[string]int64
+	S     string `json:"s"`
+	Slice []string
+	T     time.Time
 }

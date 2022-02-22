@@ -9,7 +9,6 @@ import (
 	"github.com/go-generalize/go2ts/pkg/parser"
 	tstypes "github.com/go-generalize/go2ts/pkg/types"
 	"github.com/google/go-cmp/cmp"
-	"github.com/k0kubun/pp"
 )
 
 func TestGenerate(t *testing.T) {
@@ -82,8 +81,8 @@ func TestGenerate(t *testing.T) {
 			}
 
 			fmt.Println(generated)
-			pp.Println(gen.generatorParam.Objects)
-			pp.Println(gen.generatorParam.Consts)
+			fmt.Println(gen.generatorParam.Objects)
+			fmt.Println(gen.generatorParam.Consts)
 
 			b, err := os.ReadFile(c.expected)
 
@@ -94,7 +93,6 @@ func TestGenerate(t *testing.T) {
 			if diff := cmp.Diff(string(b), generated); diff != "" {
 				t.Error(diff)
 			}
-
 		})
 	}
 }
